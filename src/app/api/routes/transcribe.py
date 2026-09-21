@@ -5,11 +5,6 @@ from src.app.schemas.voice import TranscribeFlowResponse
 router = APIRouter(tags=["transcribe"])
 
 
-@router.get("/")
-async def healthcheck() -> dict[str, str]:
-    return {"status": "ok"}
-
-
 @router.post("/transcribe", response_model=TranscribeFlowResponse)
 async def transcribe_and_run_flow(request: Request) -> TranscribeFlowResponse:
     _ = request

@@ -20,9 +20,13 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
+
+    @app.get("/", tags=["health"])
+    def healthcheck() -> dict[str, str]:
+        return {"message": "Voice Command API is running"}
 
     app.include_router(tasks_router)
     app.include_router(instruction_router)
