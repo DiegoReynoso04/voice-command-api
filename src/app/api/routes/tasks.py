@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from src.app.schemas.voice import Task, TaskCreate, TaskReplace, TaskUpdate
-from src.app.services.task_store import tasks
+from src.app.services.task_store import next_task_id, tasks
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -46,10 +46,6 @@ def delete_task(task_id: int) -> dict[str, str]:
     task = get_task_or_404(task_id)
     tasks.remove(task)
     return {"message": f"Task {task_id} deleted"}
-
-
-def next_task_id() -> int:
-    return max((t["id"] for t in tasks), default=0) + 1
 
 
 def get_task_or_404(task_id: int) -> dict[str, Any]:

@@ -16,12 +16,25 @@ router = APIRouter(tags=["transcribe"])
 async def transcribe_and_run_flow(request: Request) -> TranscribeFlowResponse:
     """Full voice flow: audio (or manual text) -> transcription -> instruction -> /tasks."""
     transcription = await read_transcription(request)
-    instruction = await run_in_threadpool(interpret_instruction, transcription)
-    result = execute_instruction(instruction)
+    try:
+        instruction = await run_in_threadpool(interpret_instruction, transcription)
+        result = execute_instruction(instruction)
+    except HTTPException as exc:
+        raise with_transcription(exc, transcription) from exc
     return TranscribeFlowResponse(
         transcription=transcription,
         instruction=instruction,
         result=result,
+    )
+
+
+def with_transcription(exc: HTTPException, transcription: str) -> HTTPException:
+    """Re-raise a routing/execution error keeping the transcription the backend heard."""
+    detail = exc.detail if isinstance(exc.detail, dict) else {"message": exc.detail}
+    return HTTPException(
+        status_code=exc.status_code,
+        detail={**detail, "transcription": transcription},
+        headers=exc.headers,
     )
 
 
