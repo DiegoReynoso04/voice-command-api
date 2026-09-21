@@ -1,6 +1,6 @@
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class TaskCreate(BaseModel):
@@ -29,9 +29,14 @@ class InstructionRequest(BaseModel):
 
 
 class InstructionPayload(BaseModel):
-    endpoint: str = Field(..., min_length=1)
-    method: str = Field(..., min_length=1)
+    endpoint: str = Field(..., pattern=r"^/tasks(/\d+)?$")
+    method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
     params: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("method", mode="before")
+    @classmethod
+    def uppercase_method(cls, value: object) -> object:
+        return value.strip().upper() if isinstance(value, str) else value
 
 
 class TranscribeFlowResponse(BaseModel):
